@@ -1,0 +1,29 @@
+{
+	"genesis_time": "Tue Aug 11 21:06:27 -0400 2015",
+	"chain_id": "load_test_chain",
+	"params": null,
+	"accounts": [
+		{
+			"address": "54A4B806E677CFA16923A5B82EF24DA8DC683281",
+			"amount": 2251799813685248,
+			"name": "",
+			"permissions": null
+		}
+	],
+	"validators": [
+		{
+			"pub_key": [
+				1,
+				"AB65D4EA4650E0289DA70EA66EFF6FBB79D70AB59A09A2B65F0B1405806768DD"
+			],
+			"amount": 1000,
+			"name": "",
+			"unbond_to": [
+				{
+					"address": "54A4B806E677CFA16923A5B82EF24DA8DC683281",
+					"amount": 1000
+				}
+			]
+		}
+	]
+}
