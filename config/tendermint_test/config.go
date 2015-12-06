@@ -72,6 +72,9 @@ func GetConfig(rootDir string) cfg.Config {
 	mapConfig.SetDefault("rpc_laddr", "0.0.0.0:36657")
 	mapConfig.SetDefault("prof_laddr", "")
 	mapConfig.SetDefault("revision_file", rootDir+"/revision")
+	mapConfig.SetDefault("influxdb_host", "")
+	mapConfig.SetDefault("influxdb_name", "")
+	mapConfig.SetDefault("replay_file", "")
 	return mapConfig
 }
 

@@ -26,6 +26,7 @@ func EventStringRelock() string           { return "Relock" }
 func EventStringTimeoutWait() string      { return "TimeoutWait" }
 func EventStringVote() string             { return "Vote" }
 func EventStringApp() string              { return "App" }
+func EventStringConsensusMessage() string { return "ConsensusMessage" }
 
 //----------------------------------------
 
@@ -37,6 +38,8 @@ const (
 
 	EventDataTypeRoundState = byte(0x11)
 	EventDataTypeVote       = byte(0x12)
+
+	EventDataTypeConsensusMessage = byte(0x20)
 )
 
 type EventData interface {
@@ -51,6 +54,7 @@ var _ = wire.RegisterInterface(
 	wire.ConcreteType{EventDataApp{}, EventDataTypeApp},
 	wire.ConcreteType{EventDataRoundState{}, EventDataTypeRoundState},
 	wire.ConcreteType{EventDataVote{}, EventDataTypeVote},
+	wire.ConcreteType{EventDataConsensusMessage{}, EventDataTypeConsensusMessage},
 )
 
 // Most event messages are basic types (a block, a transaction)
@@ -95,8 +99,14 @@ type EventDataVote struct {
 	Vote    *Vote
 }
 
-func (_ EventDataNewBlock) AssertIsEventData()   {}
-func (_ EventDataTx) AssertIsEventData()         {}
-func (_ EventDataApp) AssertIsEventData()        {}
-func (_ EventDataRoundState) AssertIsEventData() {}
-func (_ EventDataVote) AssertIsEventData()       {}
+// temporary, won't work over the wire unless we move ConsensusMessage definitions into types
+type EventDataConsensusMessage struct {
+	Message interface{} `json:"message"` // influx-db
+}
+
+func (_ EventDataNewBlock) AssertIsEventData()         {}
+func (_ EventDataTx) AssertIsEventData()               {}
+func (_ EventDataApp) AssertIsEventData()              {}
+func (_ EventDataRoundState) AssertIsEventData()       {}
+func (_ EventDataVote) AssertIsEventData()             {}
+func (_ EventDataConsensusMessage) AssertIsEventData() {}

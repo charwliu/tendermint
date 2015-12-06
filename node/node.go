@@ -1,17 +1,24 @@
 package node
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/hex"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	. "github.com/tendermint/go-common"
 	"github.com/tendermint/go-crypto"
 	dbm "github.com/tendermint/go-db"
+	"github.com/tendermint/go-merkle"
 	"github.com/tendermint/go-p2p"
 	"github.com/tendermint/go-wire"
 	bc "github.com/tendermint/tendermint/blockchain"
@@ -111,6 +118,14 @@ func NewNode() *Node {
 		}()
 	}
 
+	dbHost := config.GetString("influxdb_host")
+	dbName := config.GetString("influxdb_name")
+	if dbHost != "" && dbName != "" {
+		nodeID := fmt.Sprintf("%x", privValidator.PubKey[:])
+		callback := logEventCallback(dbHost, dbName, nodeID)
+		eventSwitch.AddListenerForEvent("logEvents", types.EventStringConsensusMessage(), callback)
+	}
+
 	return &Node{
 		sw:               sw,
 		evsw:             eventSwitch,
@@ -132,8 +147,17 @@ func (n *Node) Start() error {
 	n.book.Start()
 	n.sw.SetNodeInfo(makeNodeInfo(n.sw, n.privKey))
 	n.sw.SetNodePrivKey(n.privKey)
-	_, err := n.sw.Start()
-	return err
+	if _, err := n.sw.Start(); err != nil {
+		return err
+	}
+
+	replayFile := config.GetString("replay_file")
+	if replayFile != "" {
+		msgChan := make(chan consensus.ConsensusMessage)
+		go ConvertReplayFileToMessages(replayFile, msgChan)
+		n.consensusReactor.ReplayMessages(msgChan)
+	}
+	return nil
 }
 
 func (n *Node) Stop() {
@@ -350,4 +374,199 @@ func getProxyApp(addr string, hash []byte) proxy.AppContext {
 	}
 
 	return proxyAppCtx
+}
+
+//-------------------------------------------------
+
+func logEventCallback(dbHost, dbName, nodeID string) func(data types.EventData) {
+	return func(data types.EventData) {
+		dataCM, ok := data.(*types.EventDataConsensusMessage)
+		if !ok {
+			return
+		}
+
+		dbPoint, err := influxDBPoint(dataCM, nodeID)
+		if err != nil {
+			log.Error("Couldn't get influxDBPoint", "error", err)
+		}
+		logEvent(dbHost, dbName, dbPoint)
+	}
+}
+
+func influxDBPoint(dataCM *types.EventDataConsensusMessage, nodeID string) (point string, err error) {
+	switch msg := dataCM.Message.(type) {
+	case *consensus.ProposalMessage:
+		point = fmt.Sprintf("event,type=proposal,node=%s,parts_hash=%x,signature=%x height=%d,round=%d,pol_round=%d,parts_total=%d", nodeID, msg.Proposal.BlockPartsHeader.Hash, msg.Proposal.Signature[:], msg.Proposal.Height, msg.Proposal.Round, msg.Proposal.POLRound, msg.Proposal.BlockPartsHeader.Total)
+	case *consensus.BlockPartMessage:
+		proof := wire.JSONBytes(msg.Part.Proof)
+		point = fmt.Sprintf("event,type=block_part,node=%s,proof=%x,bytes=%x height=%d,round=%d", nodeID, proof, msg.Part.Bytes, msg.Height, msg.Round)
+	case *consensus.VoteMessage:
+		point = fmt.Sprintf("event,type=vote,node=%s,val_index=%d,hash=%x,parts_hash=%x,signature=%x height=%d,round=%d,vote_type=%d,parts_total=%d", nodeID, msg.ValidatorIndex, msg.Vote.BlockHash, msg.Vote.BlockPartsHeader.Hash, msg.Vote.Signature[:], msg.Vote.Height, msg.Vote.Round, msg.Vote.Type, msg.Vote.BlockPartsHeader.Total)
+	default:
+		err = fmt.Errorf("Unknown message type")
+
+	}
+	return
+}
+
+func logEvent(dbHost, dbName, dbPoint string) {
+	buf := new(bytes.Buffer)
+	buf.WriteString(dbPoint)
+	resp, err := http.Post(fmt.Sprintf("http://%s/write?db=%s", dbHost, dbName), "", buf)
+	if err != nil {
+		log.Error("Error logging event to influxDB", "error", err)
+	}
+
+	if resp.StatusCode != 204 {
+		if resp.StatusCode == 400 {
+			log.Error("Bad syntax writing point to influxDB", "string", dbPoint)
+		} else {
+			log.Error("Writing to influxDB was unsuccessful", "status_code", resp.StatusCode)
+		}
+	}
+}
+
+func ConvertReplayFileToMessages(replayFile string, msgChan chan consensus.ConsensusMessage) {
+	f, err := os.Open(replayFile)
+	if err != nil {
+		Exit(err.Error())
+	}
+
+	br := bufio.NewReader(f)
+	line, err := br.ReadString('\n')
+	if err != nil {
+		Exit(err.Error())
+	}
+	fmt.Println(line)
+
+	var lastTime int64
+	for {
+		line, err := br.ReadString('\n')
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			Exit(err.Error())
+		}
+
+		line = line[:len(line)-1]
+
+		spl := strings.Split(line, ",")
+
+		newTime, err := strconv.ParseInt(spl[timeIndex], 10, 64)
+		ifExit(err)
+
+		typ := spl[typeIndex]
+		var msg consensus.ConsensusMessage
+		switch typ {
+		case "vote":
+			height, err := strconv.ParseInt(spl[heightIndex], 10, 64)
+			ifExit(err)
+			round, err := strconv.ParseInt(spl[roundIndex], 10, 64)
+			ifExit(err)
+			typ, err := strconv.ParseInt(spl[voteTypeIndex], 10, 64)
+			ifExit(err)
+			blockHash, err := hex.DecodeString(spl[hashIndex])
+			ifExit(err)
+			partsTotal, err := strconv.ParseInt(spl[partsTotalIndex], 10, 64)
+			ifExit(err)
+			partsHash, err := hex.DecodeString(spl[partsHashIndex])
+			ifExit(err)
+			sigSlice, err := hex.DecodeString(spl[signatureIndex])
+			ifExit(err)
+			valIndex, err := strconv.ParseInt(spl[valIndexIndex], 10, 64)
+			ifExit(err)
+
+			var sig crypto.SignatureEd25519
+			copy(sig[:], sigSlice)
+
+			vote := &types.Vote{
+				Height:           int(height),
+				Round:            int(round),
+				Type:             byte(typ),
+				BlockHash:        blockHash,
+				BlockPartsHeader: types.PartSetHeader{int(partsTotal), partsHash},
+				Signature:        sig,
+			}
+			msg = &consensus.VoteMessage{int(valIndex), vote}
+
+		case "block_part":
+			height, err := strconv.ParseInt(spl[heightIndex], 10, 64)
+			ifExit(err)
+			round, err := strconv.ParseInt(spl[roundIndex], 10, 64)
+			ifExit(err)
+			proofBytes, err := hex.DecodeString(spl[proofIndex])
+			ifExit(err)
+			bytesBytes, err := hex.DecodeString(spl[bytesIndex])
+			ifExit(err)
+			proof := new(merkle.SimpleProof)
+			wire.ReadJSON(proof, proofBytes, &err)
+			ifExit(err)
+			msg = &consensus.BlockPartMessage{
+				Height: int(height),
+				Round:  int(round),
+				Part:   &types.Part{Proof: *proof, Bytes: bytesBytes},
+			}
+
+		case "proposal":
+			height, err := strconv.ParseInt(spl[heightIndex], 10, 64)
+			ifExit(err)
+			round, err := strconv.ParseInt(spl[roundIndex], 10, 64)
+			ifExit(err)
+			polRound, err := strconv.ParseInt(spl[polRoundIndex], 10, 64)
+			ifExit(err)
+			partsTotal, err := strconv.ParseInt(spl[partsTotalIndex], 10, 64)
+			ifExit(err)
+			partsHash, err := hex.DecodeString(spl[partsHashIndex])
+			ifExit(err)
+			sigSlice, err := hex.DecodeString(spl[signatureIndex])
+			ifExit(err)
+
+			var sig crypto.SignatureEd25519
+			copy(sig[:], sigSlice)
+
+			proposal := &types.Proposal{
+				Height:           int(height),
+				Round:            int(round),
+				BlockPartsHeader: types.PartSetHeader{Total: int(partsTotal), Hash: partsHash},
+				POLRound:         int(polRound),
+				Signature:        sig,
+			}
+			msg = &consensus.ProposalMessage{proposal}
+		default:
+			Exit("Unknown type " + typ)
+		}
+
+		if lastTime != 0 {
+			time.Sleep(time.Duration(newTime-lastTime) * time.Nanosecond)
+		}
+		msgChan <- msg
+		lastTime = newTime
+
+	}
+	close(msgChan)
+
+}
+
+const (
+	timeIndex int = iota + 1
+	bytesIndex
+	hashIndex
+	heightIndex
+	nodeIndex
+	partsHashIndex
+	partsTotalIndex
+	polRoundIndex
+	proofIndex
+	roundIndex
+	signatureIndex
+	typeIndex
+	valIndexIndex
+	voteTypeIndex
+)
+
+func ifExit(err error) {
+	if err != nil {
+		Exit(err.Error())
+	}
+
 }
