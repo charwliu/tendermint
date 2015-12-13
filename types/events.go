@@ -35,8 +35,8 @@ const (
 	EventDataTypeTx       = byte(0x03)
 	EventDataTypeApp      = byte(0x04) // Custom app event
 
-	EventDataTypeRoundStep = byte(0x11)
-	EventDataTypeVote      = byte(0x12)
+	EventDataTypeRoundState = byte(0x11)
+	EventDataTypeVote       = byte(0x12)
 )
 
 type EventData interface {
@@ -49,7 +49,7 @@ var _ = wire.RegisterInterface(
 	// wire.ConcreteType{EventDataFork{}, EventDataTypeFork },
 	wire.ConcreteType{EventDataTx{}, EventDataTypeTx},
 	wire.ConcreteType{EventDataApp{}, EventDataTypeApp},
-	wire.ConcreteType{EventDataRoundState{}, EventDataTypeRoundStep},
+	wire.ConcreteType{EventDataRoundState{}, EventDataTypeRoundState},
 	wire.ConcreteType{EventDataVote{}, EventDataTypeVote},
 )
 
