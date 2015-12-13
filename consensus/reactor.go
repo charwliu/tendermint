@@ -273,11 +273,22 @@ func makeRoundStepMessages(rs *RoundState) (nrsMsg *NewRoundStepMessage, csMsg *
 // Listens for changes to the ConsensusState.Step by pulling
 // on conR.conS.NewStepCh().
 func (conR *ConsensusReactor) broadcastNewRoundStepRoutine() {
+
+	newStepCh := make(chan interface{}, 10)
+	conR.conS.evsw.AddListenerForEvent("__consensus__", types.EventStringNewRoundStep(), func(data types.EventData) {
+		// NOTE: EventSwitch callbacks must be nonblocking
+		select {
+		case newStepCh <- data.(types.EventDataRoundState).rs.(*RoundStep):
+		default:
+			log.Warn("Failed to send new round-step event data. Ignoring")
+		}
+	})
+
 	for {
 		// Get RoundState with new Step or quit.
 		var rs *RoundState
 		select {
-		case rs = <-conR.conS.NewStepCh():
+		case rs = <-newStepCh:
 		case <-conR.Quit:
 			return
 		}

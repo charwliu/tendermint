@@ -54,7 +54,7 @@ func TestProposerSelection0(t *testing.T) {
 	cs1, vss := simpleConsensusState(4)
 	height, round := cs1.Height, cs1.Round
 
-	newRoundCh := subscribeToEvent(cs1, types.EventStringNewRound())
+	newStepCh := subscribeToEvent(cs1, types.EventStringNewRoundStep())
 	proposalCh := subscribeToEvent(cs1, types.EventStringCompleteProposal())
 
 	startTestRound(cs1, height, round)
@@ -318,7 +318,7 @@ func TestLockNoPOL(t *testing.T) {
 
 	timeoutChan := make(chan struct{})
 	evsw := events.NewEventSwitch()
-	evsw.OnStart()
+	evsw.Start()
 	evsw.AddListenerForEvent("tester", types.EventStringTimeoutPropose(), func(data types.EventData) {
 		timeoutChan <- struct{}{}
 	})
@@ -326,6 +326,7 @@ func TestLockNoPOL(t *testing.T) {
 		timeoutChan <- struct{}{}
 	})
 	cs1.SetFireable(evsw)
+	cs1.Start()
 
 	/*
 		Round1 (cs1, B) // B B // B B2
@@ -488,7 +489,7 @@ func TestLockPOLRelock(t *testing.T) {
 	timeoutChan := make(chan *types.EventDataRoundState)
 	voteChan := make(chan *types.EventDataVote)
 	evsw := events.NewEventSwitch()
-	evsw.OnStart()
+	evsw.Start()
 	evsw.AddListenerForEvent("tester", types.EventStringTimeoutPropose(), func(data types.EventData) {
 		timeoutChan <- data.(*types.EventDataRoundState)
 	})
@@ -632,7 +633,7 @@ func TestLockPOLUnlock(t *testing.T) {
 	timeoutChan := make(chan *types.EventDataRoundState)
 	voteChan := make(chan *types.EventDataVote)
 	evsw := events.NewEventSwitch()
-	evsw.OnStart()
+	evsw.Start()
 	evsw.AddListenerForEvent("tester", types.EventStringTimeoutPropose(), func(data types.EventData) {
 		timeoutChan <- data.(*types.EventDataRoundState)
 	})
@@ -758,7 +759,7 @@ func TestLockPOLSafety1(t *testing.T) {
 	timeoutChan := make(chan *types.EventDataRoundState)
 	voteChan := make(chan *types.EventDataVote)
 	evsw := events.NewEventSwitch()
-	evsw.OnStart()
+	evsw.Start()
 	evsw.AddListenerForEvent("tester", types.EventStringTimeoutPropose(), func(data types.EventData) {
 		timeoutChan <- data.(*types.EventDataRoundState)
 	})
@@ -890,7 +891,7 @@ func TestLockPOLSafety2(t *testing.T) {
 	timeoutChan := make(chan *types.EventDataRoundState)
 	voteChan := make(chan *types.EventDataVote)
 	evsw := events.NewEventSwitch()
-	evsw.OnStart()
+	evsw.Start()
 	evsw.AddListenerForEvent("tester", types.EventStringTimeoutPropose(), func(data types.EventData) {
 		timeoutChan <- data.(*types.EventDataRoundState)
 	})
@@ -1111,7 +1112,7 @@ func TestHalt1(t *testing.T) {
 
 	timeoutChan := make(chan struct{})
 	evsw := events.NewEventSwitch()
-	evsw.OnStart()
+	evsw.Start()
 	evsw.AddListenerForEvent("tester", types.EventStringTimeoutWait(), func(data types.EventData) {
 		timeoutChan <- struct{}{}
 	})

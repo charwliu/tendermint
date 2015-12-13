@@ -123,6 +123,14 @@ func (evsw *EventSwitch) FireEvent(event string, data types.EventData) {
 	eventCell.FireEvent(data)
 }
 
+func (evsw *EventSwitch) SubscribeToEvent(eventID string, chanCap int) chan interface{} {
+	ch := make(chan interface{}, chanCap)
+	evsw.AddListenerForEvent("tester", eventID, func(data types.EventData) {
+		ch <- data
+	})
+	return ch
+}
+
 //-----------------------------------------------------------------------------
 
 // eventCell handles keeping track of listener callbacks for a given event.

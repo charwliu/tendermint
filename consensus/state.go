@@ -99,17 +99,19 @@ type RoundState struct {
 
 func (rs *RoundState) RoundStateEvent() *types.EventDataRoundState {
 	return &types.EventDataRoundState{
-		CurrentTime:   time.Now(),
-		Height:        rs.Height,
-		Round:         rs.Round,
-		Step:          rs.Step.String(),
-		StartTime:     rs.StartTime,
-		CommitTime:    rs.CommitTime,
-		Proposal:      rs.Proposal,
-		ProposalBlock: rs.ProposalBlock,
-		LockedRound:   rs.LockedRound,
-		LockedBlock:   rs.LockedBlock,
-		POLRound:      rs.Votes.POLRound(),
+		CurrentTime: time.Now(),
+		Height:      rs.Height,
+		Round:       rs.Round,
+		Step:        rs.Step.String(),
+		rs:          rs,
+		/*
+			CommitTime:    rs.CommitTime,
+			Proposal:      rs.Proposal,
+			ProposalBlock: rs.ProposalBlock,
+			LockedRound:   rs.LockedRound,
+			LockedBlock:   rs.LockedBlock,
+			POLRound:      rs.Votes.POLRound(),
+		*/
 	}
 }
 
@@ -183,7 +185,6 @@ type ConsensusState struct {
 	blockStore    *bc.BlockStore
 	mempool       *mempl.Mempool
 	privValidator *types.PrivValidator
-	newStepCh     chan *RoundState
 
 	mtx sync.Mutex
 	RoundState
@@ -208,7 +209,6 @@ func NewConsensusState(state *sm.State, proxyAppCtx proxy.AppContext, blockStore
 		proxyAppCtx:      proxyAppCtx,
 		blockStore:       blockStore,
 		mempool:          mempool,
-		newStepCh:        make(chan *RoundState, 10),
 		peerMsgQueue:     make(chan msgInfo, msgQueueSize),
 		internalMsgQueue: make(chan msgInfo, msgQueueSize),
 		timeoutTicker:    new(time.Ticker),
@@ -256,10 +256,6 @@ func (cs *ConsensusState) SetPrivValidator(priv *types.PrivValidator) {
 	cs.mtx.Lock()
 	defer cs.mtx.Unlock()
 	cs.privValidator = priv
-}
-
-func (cs *ConsensusState) NewStepCh() chan *RoundState {
-	return cs.newStepCh
 }
 
 func (cs *ConsensusState) OnStart() error {
@@ -351,7 +347,7 @@ func (cs *ConsensusState) updateRoundStep(round int, step RoundStepType) {
 func (cs *ConsensusState) scheduleRound0(height int) {
 	//log.Info("scheduleRound0", "now", time.Now(), "startTime", cs.StartTime)
 	sleepDuration := cs.StartTime.Sub(time.Now())
-	cs.scheduleTimeout(sleepDuration, height, 0, 1)
+	cs.scheduleTimeout(sleepDuration, height, 0, RoundStepNewHeight)
 }
 
 // Attempt to schedule a timeout by sending timeoutInfo on the tickChan.
@@ -464,7 +460,7 @@ func (cs *ConsensusState) updateToState(state *sm.State) {
 
 func (cs *ConsensusState) newStep() {
 	cs.nSteps += 1
-	cs.newStepCh <- cs.getRoundState()
+	cs.evsw.FireEvent(types.EventStringNewRoundStep(), cs.RoundStateEvent())
 }
 
 //-----------------------------------------
@@ -602,13 +598,18 @@ func (cs *ConsensusState) handleTimeout(ti timeoutInfo, rs RoundState) {
 	log.Debug("Received tock", "timeout", ti.duration, "height", ti.height, "round", ti.round, "step", ti.step)
 
 	// if this is a timeout for the new height
-	if ti.height == rs.Height+1 && ti.round == 0 && ti.step == 1 {
-		cs.mtx.Lock()
-		// Increment height.
-		cs.updateToState(cs.stagedState)
-		// event fired from EnterNewRound after some updates
-		cs.EnterNewRound(ti.height, 0)
-		cs.mtx.Unlock()
+	if ti.step == RoundStepNewHeight {
+		if ti.round != 0 {
+			PanicSanity(Fmt("Timeout for RoundStepNewHeight should have round 0"))
+		}
+		if ti.height == rs.Height+1 {
+			cs.mtx.Lock()
+			// Increment height.
+			cs.updateToState(cs.stagedState)
+			// event fired from EnterNewRound after some updates
+			cs.EnterNewRound(ti.height, 0)
+			cs.mtx.Unlock()
+		}
 		return
 	}
 
@@ -683,8 +684,6 @@ func (cs *ConsensusState) EnterNewRound(height int, round int) {
 		cs.ProposalBlockParts = nil
 	}
 	cs.Votes.SetRound(round + 1) // also track next round (round+1) to allow round-skipping
-
-	cs.evsw.FireEvent(types.EventStringNewRound(), cs.RoundStateEvent())
 
 	// Immediately go to EnterPropose.
 	cs.EnterPropose(height, round)

@@ -172,29 +172,32 @@ func signAddVoteToFrom(voteType byte, to *ConsensusState, from *validatorStub, h
 	return vote
 }
 
-func ensureNoNewStep(t *testing.T, cs *ConsensusState) {
+// rsCh: returned from subscribeToEvent(cs, types.EventStringNewRound())
+func ensureNoNewStep(t *testing.T, rsCh chan interface{}) {
 	timeout := time.NewTicker(ensureTimeout * time.Second)
 	select {
 	case <-timeout.C:
 		break
-	case <-cs.NewStepCh():
+	case <-rsCh:
 		panic("We should be stuck waiting for more votes, not moving to the next step")
 	}
 }
 
-func ensureNewStep(t *testing.T, cs *ConsensusState) *RoundState {
+// rsCh: returned from subscribeToEvent(cs, types.EventStringNewRound())
+func ensureNewStep(t *testing.T, rsCh chan interface{}) *RoundState {
 	timeout := time.NewTicker(ensureTimeout * time.Second)
 	select {
 	case <-timeout.C:
 		panic("We should have gone to the next step, not be stuck waiting")
-	case rs := <-cs.NewStepCh():
-		return rs
+	case rs := <-rsCh:
+		return rs.(*types.EventDataRoundState).rs.(*RoundState)
 	}
 }
 
-func waitFor(t *testing.T, cs *ConsensusState, height int, round int, step RoundStepType) {
+// rsCh: returned from subscribeToEvent(cs, types.EventStringNewRound())
+func waitFor(t *testing.T, rsCh chan interface{}, height int, round int, step RoundStepType) {
 	for {
-		rs := ensureNewStep(t, cs)
+		rs := ensureNewStep(t, rsCh)
 		if CompareHRS(rs.Height, rs.Round, rs.Step, height, round, step) < 0 {
 			continue
 		} else {
@@ -298,17 +301,9 @@ func simpleConsensusState(nValidators int) (*ConsensusState, []*validatorStub) {
 	cs := NewConsensusState(state, proxyAppCtxCon, blockStore, mempool)
 	cs.SetPrivValidator(privVals[0])
 
-	// from the updateToState in NewConsensusState
-	<-cs.NewStepCh()
-
 	evsw := events.NewEventSwitch()
 	cs.SetFireable(evsw)
-	evsw.OnStart()
-	go func() {
-		for {
-			<-cs.NewStepCh()
-		}
-	}()
+	evsw.Start()
 
 	// start the transition routines
 	//	cs.startRoutines()
@@ -327,6 +322,7 @@ func subscribeToEvent(cs *ConsensusState, eventID string) chan interface{} {
 	// listen for new round
 	ch := make(chan interface{}, 10)
 	evsw.AddListenerForEvent("tester", eventID, func(data types.EventData) {
+		// NOTE: in production, evsw callbacks should be nonblocking.
 		ch <- data
 	})
 	return ch

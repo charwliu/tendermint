@@ -16,7 +16,7 @@ func EventStringDupeout() string { return "Dupeout" }
 func EventStringFork() string    { return "Fork" }
 
 func EventStringNewBlock() string         { return "NewBlock" }
-func EventStringNewRound() string         { return "NewRound" }
+func EventStringNewRoundStep() string     { return "NewRoundStep" }
 func EventStringTimeoutPropose() string   { return "TimeoutPropose" }
 func EventStringCompleteProposal() string { return "CompleteProposal" }
 func EventStringPolka() string            { return "Polka" }
@@ -35,8 +35,8 @@ const (
 	EventDataTypeTx       = byte(0x03)
 	EventDataTypeApp      = byte(0x04) // Custom app event
 
-	EventDataTypeRoundState = byte(0x11)
-	EventDataTypeVote       = byte(0x12)
+	EventDataTypeRoundStep = byte(0x11)
+	EventDataTypeVote      = byte(0x12)
 )
 
 type EventData interface {
@@ -49,7 +49,7 @@ var _ = wire.RegisterInterface(
 	// wire.ConcreteType{EventDataFork{}, EventDataTypeFork },
 	wire.ConcreteType{EventDataTx{}, EventDataTypeTx},
 	wire.ConcreteType{EventDataApp{}, EventDataTypeApp},
-	wire.ConcreteType{EventDataRoundState{}, EventDataTypeRoundState},
+	wire.ConcreteType{EventDataRoundState{}, EventDataTypeRoundStep},
 	wire.ConcreteType{EventDataVote{}, EventDataTypeVote},
 )
 
@@ -72,21 +72,15 @@ type EventDataApp struct {
 	Data []byte `json:"bytes"`
 }
 
-// We fire the most recent round state that led to the event
-// (ie. NewRound will have the previous rounds state)
 type EventDataRoundState struct {
 	CurrentTime time.Time `json:"current_time"`
 
-	Height        int       `json:"height"`
-	Round         int       `json:"round"`
-	Step          string    `json:"step"`
-	StartTime     time.Time `json:"start_time"`
-	CommitTime    time.Time `json:"commit_time"`
-	Proposal      *Proposal `json:"proposal"`
-	ProposalBlock *Block    `json:"proposal_block"`
-	LockedRound   int       `json:"locked_round"`
-	LockedBlock   *Block    `json:"locked_block"`
-	POLRound      int       `json:"pol_round"`
+	Height int    `json:"height"`
+	Round  int    `json:"round"`
+	Step   string `json:"step"`
+
+	// private, not exposed via websockets
+	rs interface{}
 }
 
 type EventDataVote struct {
