@@ -97,7 +97,6 @@ func (app *remoteAppContext) sendRequestsRoutine() {
 				app.StopForError(err)
 				return
 			}
-			log.Debug("Sent request", "requestType", reflect.TypeOf(reqres.Request), "request", reqres.Request)
 			if _, ok := reqres.Request.(tmsp.RequestFlush); ok {
 				err = app.bufWriter.Flush()
 				if err != nil {
@@ -124,7 +123,6 @@ func (app *remoteAppContext) recvResponseRoutine() {
 		case tmsp.ResponseException:
 			app.StopForError(errors.New(res.Error))
 		default:
-			log.Debug("Received response", "responseType", reflect.TypeOf(res), "response", res)
 			err := app.didRecvResponse(res)
 			if err != nil {
 				app.StopForError(err)
