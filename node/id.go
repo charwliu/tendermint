@@ -1,7 +1,7 @@
 package node
 
 import (
-	"github.com/tendermint/go-crypto"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-crypto"
 	"time"
 )
 

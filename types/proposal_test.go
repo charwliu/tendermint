@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	. "github.com/tendermint/go-common"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
 	_ "github.com/tendermint/tendermint/config/tendermint_test"
 )
 

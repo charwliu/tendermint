@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-logio"
-	"github.com/tendermint/tmsp/example/golang"
-	"github.com/tendermint/tmsp/server"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-logio"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/example/golang"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/server"
 )
 
 func TestEcho(t *testing.T) {

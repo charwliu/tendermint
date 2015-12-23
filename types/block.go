@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-merkle"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 )
 
 const MaxBlockSize = 22020096 // 21MB TODO make it configurable

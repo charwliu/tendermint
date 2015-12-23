@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-merkle"
 )
 
 // Signable is an interface for all signable things.

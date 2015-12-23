@@ -16,14 +16,14 @@
 */
 package test
 
-import proto "github.com/gogo/protobuf/proto"
+import proto "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
 import bytes "bytes"
 
 import strings "strings"
-import github_com_gogo_protobuf_proto "github.com/gogo/protobuf/proto"
+import github_com_gogo_protobuf_proto "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/gogo/protobuf/proto"
 import sort "sort"
 import strconv "strconv"
 import reflect "reflect"

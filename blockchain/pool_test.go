@@ -1,4 +1,3 @@
-
 package blockchain
 
 import (
@@ -6,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/tendermint/go-common"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
 	"github.com/tendermint/tendermint/types"
 )
 

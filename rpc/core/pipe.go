@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/tendermint/go-p2p"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-p2p"
 	bc "github.com/tendermint/tendermint/blockchain"
 	"github.com/tendermint/tendermint/consensus"
 	mempl "github.com/tendermint/tendermint/mempool"

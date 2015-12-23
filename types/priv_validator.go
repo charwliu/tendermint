@@ -8,11 +8,11 @@ import (
 	"os"
 	"sync"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-crypto"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-crypto"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 
-	"github.com/tendermint/ed25519"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/ed25519"
 )
 
 const (

@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/tendermint/go-common"
-	dbm "github.com/tendermint/go-db"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	dbm "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-db"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 	"github.com/tendermint/tendermint/events"
 	"github.com/tendermint/tendermint/types"
 )

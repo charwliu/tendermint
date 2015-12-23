@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	. "github.com/tendermint/go-common"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
 )
 
 func TestBasicPartSet(t *testing.T) {

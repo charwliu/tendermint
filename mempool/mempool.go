@@ -6,11 +6,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/tendermint/go-clist"
-	. "github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-clist"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	tmsp "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/types"
 	"github.com/tendermint/tendermint/proxy"
 	"github.com/tendermint/tendermint/types"
-	tmsp "github.com/tendermint/tmsp/types"
 )
 
 /*

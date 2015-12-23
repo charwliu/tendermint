@@ -10,8 +10,8 @@ import (
 	"runtime/debug"
 	"time"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 	"github.com/tendermint/tendermint/alert"
 	. "github.com/tendermint/tendermint/rpc/types"
 )

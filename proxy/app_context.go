@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	tmsp "github.com/tendermint/tmsp/types"
+	tmsp "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/types"
 )
 
 type Callback func(tmsp.Request, tmsp.Response)

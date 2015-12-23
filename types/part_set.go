@@ -7,11 +7,11 @@ import (
 	"io"
 	"sync"
 
-	"golang.org/x/crypto/ripemd160"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/golang.org/x/crypto/ripemd160"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-merkle"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 )
 
 const (

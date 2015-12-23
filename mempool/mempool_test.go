@@ -4,10 +4,10 @@ import (
 	"encoding/binary"
 	"testing"
 
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/example/golang"
+	tmsp "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/types"
 	"github.com/tendermint/tendermint/proxy"
 	"github.com/tendermint/tendermint/types"
-	"github.com/tendermint/tmsp/example/golang"
-	tmsp "github.com/tendermint/tmsp/types"
 )
 
 func TestSerialReap(t *testing.T) {

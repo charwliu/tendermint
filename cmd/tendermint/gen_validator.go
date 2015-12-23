@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 	"github.com/tendermint/tendermint/types"
-	"github.com/tendermint/go-wire"
 )
 
 func gen_validator() {

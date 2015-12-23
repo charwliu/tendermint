@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"sync"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-wire"
-	tmsp "github.com/tendermint/tmsp/types"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
+	tmsp "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/types"
 )
 
 const maxResponseSize = 1048576 // 1MB

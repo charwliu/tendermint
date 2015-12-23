@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/tendermint/go-common"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
 )
 
 func BenchmarkFileWrite(b *testing.B) {

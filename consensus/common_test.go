@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	dbm "github.com/tendermint/go-db"
+	dbm "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-db"
 	bc "github.com/tendermint/tendermint/blockchain"
 	_ "github.com/tendermint/tendermint/config/tendermint_test"
 	"github.com/tendermint/tendermint/events"
@@ -16,7 +16,7 @@ import (
 	sm "github.com/tendermint/tendermint/state"
 	"github.com/tendermint/tendermint/types"
 
-	"github.com/tendermint/tmsp/example/golang"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/example/golang"
 )
 
 var chainID string

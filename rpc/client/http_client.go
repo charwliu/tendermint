@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 	"github.com/tendermint/tendermint/rpc/types"
 )
 

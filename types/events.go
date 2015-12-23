@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/tendermint/go-wire"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 )
 
 // Functions to generate eventId strings

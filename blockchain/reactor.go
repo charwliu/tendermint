@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"time"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-p2p"
-	"github.com/tendermint/go-wire"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-p2p"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 	"github.com/tendermint/tendermint/events"
 	"github.com/tendermint/tendermint/proxy"
 	sm "github.com/tendermint/tendermint/state"

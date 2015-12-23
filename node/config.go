@@ -1,8 +1,7 @@
-
 package node
 
 import (
-	cfg "github.com/tendermint/go-config"
+	cfg "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-config"
 )
 
 var config cfg.Config = nil

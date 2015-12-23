@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-merkle"
 )
 
 // ValidatorSet represent a set of *Validator at a given height.

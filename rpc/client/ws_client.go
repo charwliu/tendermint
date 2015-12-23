@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/websocket"
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-wire"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/gorilla/websocket"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-wire"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/rpc/types"
 )

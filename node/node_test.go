@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-p2p"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-p2p"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/example/golang"
+	"github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/tmsp/server"
 	_ "github.com/tendermint/tendermint/config/tendermint_test"
-	"github.com/tendermint/tmsp/example/golang"
-	"github.com/tendermint/tmsp/server"
 )
 
 func TestNodeStartStop(t *testing.T) {

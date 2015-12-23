@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/tendermint/go-common"
-	cfg "github.com/tendermint/go-config"
+	. "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-common"
+	cfg "github.com/tendermint/tendermint/Godeps/_workspace/src/github.com/tendermint/go-config"
 	tmcfg "github.com/tendermint/tendermint/config/tendermint"
 	"github.com/tendermint/tendermint/node"
 )
