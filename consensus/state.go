@@ -1226,7 +1226,8 @@ func (cs *ConsensusState) addProposalBlockPart(height int, part *types.Part) (ad
 		var n int
 		var err error
 		cs.ProposalBlock = wire.ReadBinary(&types.Block{}, cs.ProposalBlockParts.GetReader(), types.MaxBlockSize, &n, &err).(*types.Block)
-		log.Info("Received complete proposal", "hash", cs.ProposalBlock.Hash(), "round", cs.Proposal.Round)
+		// NOTE: it's possible to receive complete proposal blocks for future rounds without having the proposal
+		log.Info("Received complete proposal block", "hash", cs.ProposalBlock.Hash())
 		if cs.Step == RoundStepPropose && cs.isProposalComplete() {
 			// Move onto the next step
 			cs.enterPrevote(height, cs.Round)
