@@ -254,6 +254,8 @@ func makeNodeInfo(sw *p2p.Switch, privKey crypto.PrivKeyEd25519) *p2p.NodeInfo {
 
 func RunNode() {
 
+	p2p.FUZZ_MODE = true
+
 	// Wait until the genesis doc becomes available
 	genDocFile := config.GetString("genesis_file")
 	if !FileExists(genDocFile) {
