@@ -20,7 +20,8 @@ import (
 )
 
 var (
-	timeoutPropose        = 3000 * time.Millisecond // Maximum duration of RoundStepPropose
+	timeoutPropose0       = 3000 * time.Millisecond // Wait this long for a proposal
+	timeoutProposeDelta   = 0500 * time.Millisecond // timeoutProposeN is timeoutPropose0 + timeoutProposeDelta*N
 	timeoutPrevote0       = 1000 * time.Millisecond // After any +2/3 prevotes received, wait this long for stragglers.
 	timeoutPrevoteDelta   = 0500 * time.Millisecond // timeoutPrevoteN is timeoutPrevote0 + timeoutPrevoteDelta*N
 	timeoutPrecommit0     = 1000 * time.Millisecond // After any +2/3 precommits received, wait this long for stragglers.
@@ -692,9 +693,6 @@ func (cs *ConsensusState) enterNewRound(height int, round int) {
 
 // Enter: from NewRound(height,round).
 func (cs *ConsensusState) enterPropose(height int, round int) {
-	//	cs.mtx.Lock()
-	//	cs.mtx.Unlock()
-
 	if cs.Height != height || round < cs.Round || (cs.Round == round && RoundStepPropose <= cs.Step) {
 		log.Debug(Fmt("enterPropose(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, cs.Height, cs.Round, cs.Step))
 		return
@@ -715,7 +713,7 @@ func (cs *ConsensusState) enterPropose(height int, round int) {
 	}()
 
 	// This step times out after `timeoutPropose`
-	cs.scheduleTimeout(timeoutPropose, height, round, RoundStepPropose)
+	cs.scheduleTimeout(timeoutPropose0+timeoutProposeDelta*time.Duration(round), height, round, RoundStepPropose)
 
 	// Nothing more to do if we're not a validator
 	if cs.privValidator == nil {
@@ -842,8 +840,6 @@ func (cs *ConsensusState) createProposalBlock() (block *types.Block, blockParts 
 // Prevote for LockedBlock if we're locked, or ProposalBlock if valid.
 // Otherwise vote nil.
 func (cs *ConsensusState) enterPrevote(height int, round int) {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
 	if cs.Height != height || round < cs.Round || (cs.Round == round && RoundStepPrevote <= cs.Step) {
 		log.Debug(Fmt("enterPrevote(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, cs.Height, cs.Round, cs.Step))
 		return
@@ -907,8 +903,6 @@ func (cs *ConsensusState) doPrevote(height int, round int) {
 
 // Enter: any +2/3 prevotes at next round.
 func (cs *ConsensusState) enterPrevoteWait(height int, round int) {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
 	if cs.Height != height || round < cs.Round || (cs.Round == round && RoundStepPrevoteWait <= cs.Step) {
 		log.Debug(Fmt("enterPrevoteWait(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, cs.Height, cs.Round, cs.Step))
 		return
@@ -935,8 +929,6 @@ func (cs *ConsensusState) enterPrevoteWait(height int, round int) {
 // else, unlock an existing lock and precommit nil if +2/3 of prevotes were nil,
 // else, precommit nil otherwise.
 func (cs *ConsensusState) enterPrecommit(height int, round int) {
-	//cs.mtx.Lock()
-	//	defer cs.mtx.Unlock()
 	if cs.Height != height || round < cs.Round || (cs.Round == round && RoundStepPrecommit <= cs.Step) {
 		log.Debug(Fmt("enterPrecommit(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, cs.Height, cs.Round, cs.Step))
 		return
@@ -1032,8 +1024,6 @@ func (cs *ConsensusState) enterPrecommit(height int, round int) {
 
 // Enter: any +2/3 precommits for next round.
 func (cs *ConsensusState) enterPrecommitWait(height int, round int) {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
 	if cs.Height != height || round < cs.Round || (cs.Round == round && RoundStepPrecommitWait <= cs.Step) {
 		log.Debug(Fmt("enterPrecommitWait(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, cs.Height, cs.Round, cs.Step))
 		return
@@ -1056,8 +1046,6 @@ func (cs *ConsensusState) enterPrecommitWait(height int, round int) {
 
 // Enter: +2/3 precommits for block
 func (cs *ConsensusState) enterCommit(height int, commitRound int) {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
 	if cs.Height != height || RoundStepCommit <= cs.Step {
 		log.Debug(Fmt("enterCommit(%v/%v): Invalid args. Current step: %v/%v/%v", height, commitRound, cs.Height, cs.Round, cs.Step))
 		return
@@ -1122,9 +1110,6 @@ func (cs *ConsensusState) tryFinalizeCommit(height int) {
 
 // Increment height and goto RoundStepNewHeight
 func (cs *ConsensusState) finalizeCommit(height int) {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
-
 	if cs.Height != height || cs.Step != RoundStepCommit {
 		log.Debug(Fmt("finalizeCommit(%v): Invalid args. Current step: %v/%v/%v", height, cs.Height, cs.Round, cs.Step))
 		return
@@ -1167,9 +1152,6 @@ func (cs *ConsensusState) finalizeCommit(height int) {
 //-----------------------------------------------------------------------------
 
 func (cs *ConsensusState) setProposal(proposal *types.Proposal) error {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
-
 	// Already have one
 	if cs.Proposal != nil {
 		return nil
@@ -1204,9 +1186,6 @@ func (cs *ConsensusState) setProposal(proposal *types.Proposal) error {
 // NOTE: block is not necessarily valid.
 // This can trigger us to go into enterPrevote asynchronously (before we timeout of propose) or to attempt to commit
 func (cs *ConsensusState) addProposalBlockPart(height int, part *types.Part) (added bool, err error) {
-	//cs.mtx.Lock()
-	//defer cs.mtx.Unlock()
-
 	// Blocks might be reused, so round mismatch is OK
 	if cs.Height != height {
 		return false, nil
