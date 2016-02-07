@@ -132,6 +132,7 @@ func (pool *BlockPool) IsCaughtUp() bool {
 
 	// Need at least 1 peer to be considered caught up.
 	if len(pool.peers) == 0 {
+		log.Note("Blockpool has no peers")
 		return false
 	}
 
